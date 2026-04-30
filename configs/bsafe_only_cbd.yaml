@@ -1,0 +1,75 @@
+data:
+  train_split: train
+  val_split: val
+  test_split: test
+  train_sources: bsafe
+  val_sources: bsafe
+  test_sources: bsafe
+  target_type: all
+  clip_fps: 5
+  datasets:
+    bsafe:
+      kind: bsafe
+      dataset_root: /home2020/home/icube/camma_files/camma_data/bsafe_dataset/bsafe
+      clips_root: /home2020/home/icube/camma_files/camma_data/bsafe_dataset/bsafe/cbd_v2/clips
+      easy_mask_cache_root: /home2020/home/icube/camma_files/camma_data/bsafe_dataset/bsafe/cbd_v2/easy_masks
+      videos_root: /home2020/home/icube/camma_files/camma_data/bsafe_dataset/bsafe/videos
+      reference_frames_root: /home2020/home/icube/camma_files/camma_data/bsafe_dataset/bsafe
+
+stage1_sam3:
+  config_path: /home2020/home/miv/vedrenne/PostDoc/sam3/runs/ibsafe_lora/2026-03-24-15-38/run_1/icglceaes_lora.yaml
+  weights_path: /home2020/home/miv/vedrenne/PostDoc/sam3/runs/ibsafe_lora/2026-03-24-15-38/run_1/best_lora_weights.pt
+  tracker_checkpoint: null
+  easy_prompts:
+    - gallbladder
+    - liver
+  strategy: adaptive
+  stride: 8
+  adaptive_health_threshold: 0.5
+  adaptive_detector_threshold: 0.5
+  adaptive_min_gap: 8
+  resolution: 1008
+  device: cuda
+
+model:
+  variant: v2_spatiotemporal
+  backbone_name: convnext_small
+  pretrained: true
+  input_size: 512
+  image_size: 512
+  unfreeze_backbone_mode: last_stage
+  clip_len: 25
+  mask_channels: 128
+  d_model: 256
+  num_layers: 2
+  num_heads: 8
+  dropout: 0.1
+
+training:
+  batch_size: 2
+  num_workers: 4
+  learning_rate: 1.0e-4
+  backbone_lr: 1.0e-5
+  new_layers_lr: 1.0e-4
+  weight_decay: 1.0e-4
+  num_epochs: 30
+  early_stopping_patience: 5
+  mixed_precision: bf16
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  gradient_accumulation_steps: 1
+  augmentation_level: 2
+  center_heatmap_sigma: 1.0
+  loss_weights:
+    box_l1: 5.0
+    box_giou: 2.0
+    center_ce: 1.0
+    heatmap_bce: 1.0
+    type_ce: 1.0
+
+output:
+  output_dir: outputs/bsafe_only_cbd
+
+hardware:
+  device: cuda
+  dataloader_pin_memory: true

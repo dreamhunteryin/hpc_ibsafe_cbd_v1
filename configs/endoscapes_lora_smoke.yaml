@@ -1,0 +1,71 @@
+model:
+  checkpoint_path: /home2020/home/miv/vedrenne/.cache/huggingface/hub/models--facebook--sam3/snapshots/3c879f39826c281e95690f02c7821c4de09afae7/sam3.pt
+  load_from_hf: false
+  bpe_path: null
+
+data:
+  dataset_root: /home2020/home/miv/vedrenne/data/camma
+  dataset_name: Endoscapes-Seg201-CBD
+  annotation_file: annotation_coco.json
+  train_split: train
+  val_split: val
+  test_split: test
+  include_negatives: false
+  class_names:
+    - gallbladder
+
+lora:
+  rank: 4
+  alpha: 8
+  dropout: 0.0
+  target_module_match: exact
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - out_proj
+    - mask_mlp
+  apply_to_vision_encoder: false
+  apply_to_text_encoder: true
+  apply_to_geometry_encoder: false
+  apply_to_detr_encoder: true
+  apply_to_detr_decoder: true
+  apply_to_decoder_text_attention: false
+  apply_to_mask_decoder: true
+
+training:
+  batch_size: 1
+  num_workers: 0
+  use_mask_loss: true
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  num_epochs: 1
+  warmup_steps: 0
+  lr_scheduler: cosine
+  logging_steps: 1
+  eval_steps: 0
+  save_steps: 0
+  save_total_limit: 1
+  mixed_precision: none
+  seed: 42
+  augment: false
+  gradient_accumulation_steps: 1
+
+evaluation:
+  batch_size: 1
+  prob_threshold: 0.5
+  nms_iou: 0.5
+  max_detections: 100
+  save_predictions: true
+
+output:
+  output_dir: outputs/endoscapes_lora_smoke
+
+hardware:
+  device: cpu
+  dataloader_pin_memory: false
+  use_compile: false

@@ -1,0 +1,8 @@
+__include__:
+  - bsafe_cbd_rtdetrv4_base.yaml
+
+training:
+  recipe_preset: near_upstream
+
+output:
+  output_dir: outputs/bsafe_cbd_rtdetrv4_near_upstream

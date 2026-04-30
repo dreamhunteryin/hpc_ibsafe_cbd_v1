@@ -1,0 +1,76 @@
+model:
+  checkpoint_path: null
+  load_from_hf: true
+  bpe_path: null
+
+data:
+  dataset_root: /home2020/home/miv/vedrenne/data/camma
+  dataset_name: ICG-LC-EAES
+  annotation_file: annotation_coco.json
+  train_split: train
+  val_split: val
+  test_split: test
+  include_negatives: true
+  bbox_anchor: center
+  class_names:
+    - gallbladder
+    - liver
+
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.1
+  target_module_match: exact
+  target_modules:
+    - qkv
+    - proj
+    - q_proj
+    - k_proj
+    - v_proj
+    - out_proj
+    - linear1
+    - linear2
+  apply_to_vision_encoder: true
+  apply_to_text_encoder: false
+  apply_to_geometry_encoder: false
+  apply_to_detr_encoder: true
+  apply_to_detr_decoder: true
+  apply_to_decoder_text_attention: false
+  apply_to_mask_decoder: false
+
+training:
+  batch_size: 2
+  num_workers: 4
+  use_mask_loss: false
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  num_epochs: 15
+  warmup_steps: 200
+  lr_scheduler: cosine
+  logging_steps: 10
+  eval_steps: 20
+  save_steps: 20
+  save_total_limit: 5
+  mixed_precision: bf16
+  seed: 42
+  augment: true
+  gradient_accumulation_steps: 8
+
+evaluation:
+  batch_size: 1
+  prob_threshold: 0.5
+  nms_iou: 0.5
+  max_detections: 100
+  save_predictions: true
+
+output:
+  output_dir: outputs/icglceaes_lora
+
+hardware:
+  device: cuda
+  dataloader_pin_memory: true
+  use_compile: false

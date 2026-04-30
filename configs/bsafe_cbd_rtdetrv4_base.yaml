@@ -1,0 +1,50 @@
+data:
+  dataset_root: /home2020/home/icube/camma_files/camma_data/bsafe_dataset/bsafe
+  dataset_name: Bsafe
+  annotation_file: null
+  train_split: train
+  val_split: val
+  test_split: test
+  target_type: all
+
+model:
+  rtdetrv4_repo_path: /home2020/home/miv/vedrenne/PostDoc/sam3/src/RT-DETRv4
+  student_variant: l # s, m, l, x
+  student_init_path: /home2020/home/miv/vedrenne/PostDoc/sam3/checkpoints/RTv4-L-hgnet.pth
+
+teacher:
+  dinov3_model_type: dinov3_vith16plus # dinov3_vitb16, dinov3_vith16plus
+  distill_teacher_dim: 1280 # 768, 1280
+  dinov3_repo_path: /home2020/home/miv/vedrenne/PostDoc/bsafe/tracking/dinov3
+  # dinov3_weights_path: /home2020/home/miv/vedrenne/PostDoc/sam3/checkpoints/sdinov3_vitb16_backbone.pth
+  dinov3_weights_path: /home2020/home/miv/vedrenne/PostDoc/sam3/checkpoints/sdinov3_vith16plus_backbone.pth
+  patch_size: 16
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+training:
+  recipe_preset: upstream_lite # minimal
+  batch_size: 2
+  num_workers: 4
+  distill_loss_weight: 5.0
+  distill_adaptive_params:
+    enabled: false
+  detector_lr: null
+  backbone_lr: null
+  weight_decay: null
+  num_epochs: null
+  early_stopping_patience: 6
+  best_metric: map50_95
+  mixed_precision: bf16
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: null
+  gradient_accumulation_steps: 1
+  augment: true
+
+output:
+  output_dir: outputs/bsafe_cbd_rtdetrv4
+
+hardware:
+  device: cuda
+  dataloader_pin_memory: true

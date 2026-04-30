@@ -1,0 +1,35 @@
+data:
+  dataset_root: /home2020/home/icube/camma_files/camma_data/bsafe_dataset/bsafe
+  dataset_name: Bsafe
+  annotation_file: null
+  train_split: train
+  val_split: val
+  test_split: test
+  target_type: all
+
+model:
+  model_id_or_path: PekingU/rtdetr_r50vd
+  freeze_mode: freeze_backbone
+
+training:
+  batch_size: 2
+  num_workers: 4
+  detector_lr: 5.0e-5
+  backbone_lr: 1.0e-5
+  weight_decay: 5.0e-4
+  num_epochs: 20
+  early_stopping_patience: 4
+  best_metric: map50_95
+  mixed_precision: bf16
+  max_grad_norm: 0.5
+  lr_scheduler: cosine
+  warmup_steps: 250
+  gradient_accumulation_steps: 2
+  augment: true
+
+output:
+  output_dir: outputs/bsafe_cbd_rtdetr_stable
+
+hardware:
+  device: cuda
+  dataloader_pin_memory: true
