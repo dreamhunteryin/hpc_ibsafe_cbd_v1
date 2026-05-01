@@ -37,7 +37,7 @@ cbd_v1/
 
 (待補。建議命名:`01_configs_walkthrough.md`、`02_data_pipeline.md`、`03_model_architecture.md`、`04_training_loop.md`、`05_inference.md`、`06_metrics.md`)
 
-## Git Remote 設定
+## Git Remote 設定(已完成)
 
-- `origin` → 使用者個人 GitHub(待設定)
-- `upstream` → `git@forge.icube.unistra.fr:CAMMA/code/bsafe/cbd_v1.git`(工程師 Luc Vedrenne 的 CAMMA GitLab)
+- `origin` → `git@github.com:dreamhunteryin/iBSAFE_CBD_v1.git`(您的 GitHub,push 目的地)
+- `upstream` → `git@forge.icube.unistra.fr:CAMMA/code/bsafe/cbd_v1.git`(工程師 Luc Vedrenne 的 CAMMA GitLab,只用 `git fetch upstream` 拿更新,**不可** push)
