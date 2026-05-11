@@ -99,8 +99,8 @@ python slurm/schedule_train.py --config configs/icglceaes_lora.yaml --experiment
 |---|---|
 | 純 git 指令（add/commit/push/pull/remote/stash 等）| `git_basic.md` Part 5 |
 | GitHub 認證、SSH key、token、ssh-keygen | `git_basic.md` Part 5 |
-| 純 HPC 環境（conda/mamba、slurm、目錄、權限）| `hpc_basic.md` Part 7 |
-| 檔案傳輸 scp/rsync | `hpc_basic.md` Part 7 |
+| 純 HPC 環境（conda/mamba、slurm、目錄、權限）| `hpc_basic.md` Part 11 |
+| 檔案傳輸 scp/rsync | `hpc_basic.md` Part 11 |
 | 跨 git + HPC（如在 HPC 上 clone 並設 SSH key）| 主要動作所在那篇，另一篇加 `→ 參見 [案例 N]()` cross-reference |
 
 ### 案例格式（兩篇共用）

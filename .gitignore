@@ -1,0 +1,80 @@
+# ============================================================
+# iBSAFE_CBD_v1 — .gitignore
+# 規則對應 CLAUDE.md：訓練 / 推論輸出 (R2) 不入版控
+# ============================================================
+
+# --- 訓練 / 推論輸出 ---
+outputs/
+runs/
+output/
+logs/
+
+# --- 模型權重與檢查點 ---
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+
+# --- 實驗追蹤 ---
+wandb/
+mlruns/
+tensorboard/
+events.out.tfevents.*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Jupyter / IPython ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# --- 虛擬環境 ---
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# --- Slurm 預設 log 命名（若不走 slurm/schedule_*.py 自訂路徑時的保險）---
+slurm-*.out
+slurm-*.err
+
+# --- 編輯器 / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Hugging Face 與 torch hub 本機 cache（通常在 $HOME，保險用）---
+.cache/
+
+# --- 大型資料集（資料集應外掛在 camma_files/ 或 $HOME/datasets/，不放 repo）---
+data/
+datasets/
+Datasets/
+
+# --- 暫存 / 偵錯 ---
+*.tmp
+*.bak
+.scratch/
+debug_*/
