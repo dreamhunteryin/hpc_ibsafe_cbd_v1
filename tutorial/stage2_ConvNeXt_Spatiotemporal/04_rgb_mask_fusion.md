@@ -263,9 +263,55 @@ fused = fused + self.col_position[:, :, :, :grid_w]
 
 ---
 
+## 補充問答(2026-05-28):stage 1 mask 在 box 預測中具體扮演什麼角色?
+
+外科醫師會問:既然要預測的目標是 CBD,SAM-3 給的卻是「膽囊」與「肝」這兩個**不是 CBD** 的 mask,為何能輔助 CBD bbox 預測?
+
+**短答**:mask 提供「解剖學位置先驗(anatomical prior)」——告訴模型「**CBD 不會憑空出現,它應該在膽囊—肝臟交界附近**」。視覺特徵(RGB)負責「看細節」,mask 負責「鎖定範圍」,兩者疊加比單一資訊源精準得多。
+
+### 在 forward pass 中的具體傳遞路徑(v2 路徑)
+
+1. **每一 frame 都帶 mask**:dataset 從 stage 1 快取讀出 `(T=25, 2, H, W)` 的 mask 序列(2 通道 = gallbladder + liver),跟 25 frames 的 RGB 一起進 model(`engine.py:265`:`self.model(batch["rgb"], batch["masks"])`)
+2. **空間對齊**:mask 用 `nearest` 縮到 16×16(`model.py:213`),跟 ConvNeXt 出來的 RGB feature(`(B*T, 768, 16, 16)`)空間一致
+3. **通道融合**:mask_encoder 把 2 通道升到 128 通道(`model.py:149-156`),沿 channel 維度跟 RGB 的 768 通道 concat 成 896 通道,1×1 conv 投影回 256 維(`model.py:215`)
+4. **token 化**:每個 16×16 grid cell 的 256 維 feature **同時編碼「該區塊的 RGB 視覺特徵」+「該區塊有沒有膽囊/肝」**,攤平成 6400 個 spatiotemporal token 進 transformer
+
+### box_query 怎麼利用 mask 訊號
+
+`box_query` 是個 learnable 256 維 vector(`model.py:167`),訓練後它的 attention 會**自動偏向「mask 顯示是膽囊或肝、且 RGB 紋理看起來像 CBD」的 cell**——這是 multi-task 訓練自然演化出的結果:
+
+- 沒有 mask 時:box_query 必須從 RGB 特徵自學「Calot's triangle 的視覺 pattern」,訊號弱、資料需求大
+- 有 mask 時:模型把「找 CBD」拆成「先靠 mask 縮小搜尋區、再靠 RGB 精修位置」,訓練收斂更快、泛化更穩
+
+`attention_map`(`model.py:250`)可以視覺化出 box_query 在 16×16 grid 上的權重,實際看到的就是「**模型把目光鎖在膽囊與肝交界處**」——這就是 mask 直接帶來的效應。
+
+### center_cell / center_heatmap head 也吃同一份融合 token
+
+兩個輔助 head(`model.py:200-201`)直接從 spatial tokens 預測「CBD 中心在哪個 cell」「CBD 中心的 heatmap」。**mask 訊號讓無關背景 cell(肚壁、紗布、器械等)的 feature 帶有「這裡不是膽囊也不是肝」的負訊號**,輔助 head 更容易抑制錯誤位置。
+
+### 外科類比
+
+像 ICG 螢光腹腔鏡:
+- RGB 通道 = 白光,看得到組織紋理、出血、器械
+- mask 通道 = 螢光,看得到「該關心的結構在哪」
+- **單獨任何一個都不夠**——白光看不到 CBD 顯影、螢光看不到組織細節。模型的 fusion 做的是同樣的疊加。
+
+### 沒有 mask 會怎樣?(消融的概念)
+
+若把 mask 通道全部置零(或不把 mask 餵進去),整個 pipeline 退化成「**純 RGB 的 ConvNeXt + temporal transformer**」。可預期的劣化:
+
+- box 預測中心容易飄到視覺上像 CBD、但實際是膽管夾或鞘管的位置
+- center_cell head 的訓練訊號變弱(無解剖先驗,只能靠 RGB pattern)
+- 整體訓練更慢、需要更多資料才達到相同精度
+
+**重點**:mask 不是「直接告訴模型 CBD 在哪」,而是「**告訴模型 CBD 不會出現在哪**」——這個負空間排除就是它最大的價值。
+
+---
+
 ## 對話脈絡記錄
 
 - **2026-05-05**:第 4 章是 ConvNeXt 教學的「最後 backbone-中心的章節」——下一章開始重心會移到 temporal transformer。本章特別強調「為什麼 mask 也要過 encoder」這種看起來多餘但實際必要的設計選擇。
+- **2026-05-28**:外科醫師問「stage 1 mask 怎麼輔助 CBD bbox 預測?」——上方「補充問答」段把 mask 在 box_query / center head 上的具體作用拆解,並補上「沒有 mask 會怎樣」的消融直覺。配對問答在 stage 2 第 6 章(mask 是否貢獻 temporal info)。
 
 ---
 

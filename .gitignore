@@ -73,6 +73,11 @@ data/
 datasets/
 Datasets/
 
+# --- 金鑰 / access token（絕對不可入版控）---
+token/
+*.token
+secrets/
+
 # --- 暫存 / 偵錯 ---
 *.tmp
 *.bak

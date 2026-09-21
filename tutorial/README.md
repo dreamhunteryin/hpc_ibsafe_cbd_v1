@@ -49,7 +49,7 @@ cbd_v1/
 - [06 補充 — Notes(推論流向)](stage1_SAM3+LoRA_Fine-tuning/06_Notes_inference_eval_handson_recipe.md):finetuned SAM3 input/output 解析、原生格式 vs 工程師包裝、class 名稱與座標的去向
 - 📎 `docs/`:Lora.pdf、SAM3.pdf 原始論文 PDF
 
-### Stage 2 — ConvNeXt + Spatiotemporal Transformer(進行中,2026-05-05)
+### Stage 2 — ConvNeXt + Spatiotemporal Transformer(主鏈路完成,2026-05-27;deployment 待補)
 
 📂 `stage2_ConvNeXt_Spatiotemporal/`
 
@@ -62,12 +62,29 @@ ConvNeXt 教學(完成,5 章):
 - [04 — RGB + mask 融合](stage2_ConvNeXt_Spatiotemporal/04_rgb_mask_fusion.md):stage 1 mask 進場、v1 frame-level vs v2 spatial-level fusion、1×1 conv、3 種 position embedding
 - [05 — 銜接 Temporal Transformer](stage2_ConvNeXt_Spatiotemporal/05_handoff_to_temporal_transformer.md):CLS token、box_query DETR 風格、五個 head 的角色、ConvNeXt 教學收尾
 
-待撰寫(下一章節主題):
+主鏈路深入(完成,3 章,2026-05-27):
 
-- Spatiotemporal Transformer 內部:joint attention、box_query 學「鎖定」、CLS token 彙整 clip 語意
-- 訓練主迴圈與 multi-task loss(box_l1 / giou / center_ce / heatmap_bce / type_ce)
-- 推論流程與評估指標(`compute_cbd_prediction_metrics.py`)
-- 模型 deployment 技術
+- [06 — Spatiotemporal Transformer 內部](stage2_ConvNeXt_Spatiotemporal/06_spatiotemporal_transformer_internals.md):25 frames clip 結構、6401 token joint attention、CLS token 吸收 / box_query DETR 動力學、factorized position embedding、attention_map 可解釋性
+- [07 — 訓練主迴圈 + multi-task loss](stage2_ConvNeXt_Spatiotemporal/07_training_loop_multitask_loss.md):5 個 loss 各自意義與權重、backbone 差別學習率、AdamW+cosine+bf16+grad_clip、per-type 統計、Slurm 提交流程
+- [08 — 推論流程 + 評估指標 + 實操](stage2_ConvNeXt_Spatiotemporal/08_inference_eval_handson.md):cached vs external clip 兩種推論、overlay PNG/JSON 結構、`compute_cbd_prediction_metrics.py` 分組 mAP/IoU/F1、4 階段實操腳本、失敗模式速查
+
+待撰寫(需工程師補資料才能動):
+
+- 模型 deployment 技術(ONNX / TensorRT / 即時推論延遲 / 臨床整合)——**需工程師設計資料**
+
+### Stage 3 — (待主題確認)
+
+📂 `stage3_*/`(尚未建立)
+
+預定主題依使用者後續提供的素材展開。可能候選:
+
+- `src/cbd_rtdetrv4/` 線(RT-DETRv4 替代 backbone)與 `src/cbd/` ConvNeXt 線的對比
+- 跨 dataset 泛化能力分析(bsafe vs ICG-LC-EAES vs 新醫院資料)
+- 模型壓縮 / 蒸餾 / quantization
+- 臨床端整合(DICOM / PACS / 即時推論 pipeline)
+- 其他主題(看使用者提供)
+
+> Stage 3 內容會依工程師原文 + 程式碼/實驗結果整理,風格延續 stage 1/2 的「外科視角優先 + 程式碼速查表」模式。
 
 ## Git Remote 設定(已完成)
 
