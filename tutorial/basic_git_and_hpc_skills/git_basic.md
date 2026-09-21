@@ -273,4 +273,63 @@ git push -u origin main
 
 ---
 
-*最後更新：2026-05-07*
+### 案例 3：擋下差點被 push 的 access token
+
+**日期**：2026-09-21
+**情境**：要把累積的 tutorial 章節 commit + push 到 GitHub。`git status` 顯示除了 tutorial 檔案外，還多了一個從沒進過版控的 `token/` 資料夾——裡面放的是 Hugging Face access token（下載 SAM3 權重用的）。如果順手打 `git add .`，這個 token 就會被推上 GitHub，等同公開外洩。
+
+**執行**：
+
+1. **先確認歷史是乾淨的**（這個檔以前有沒有不小心 commit 過）：
+```bash
+git log --all --oneline -- 'token/*'          # 沒輸出 = 從沒被 commit 過
+git grep -I -l 'hf_[A-Za-z]\{20,\}' $(git rev-list --all)   # 掃所有 commit 內容
+```
+
+2. **在 `.gitignore` 加上金鑰目錄**（放在「暫存 / 偵錯」區塊之前）：
+```
+# --- 金鑰 / access token（絕對不可入版控）---
+token/
+*.token
+secrets/
+```
+
+3. **明確指定要 add 的路徑，不要用 `git add .`**：
+```bash
+git add .gitignore tutorial/
+```
+
+4. **commit 前驗證 staging 區乾淨**：
+```bash
+git diff --cached --name-only | grep -i token    # 沒輸出才安全
+git status --short                               # 再看一次完整清單
+```
+
+5. 確認乾淨後才 commit / push。
+
+**輸出**：
+```
+=== history 中是否曾出現 token 檔 ===
+(空白 = 沒 commit 過)
+OK: token 未進入 staging
+```
+
+**處理 / 解法**：
+
+| 狀況 | 嚴重度 | 該怎麼辦 |
+|---|---|---|
+| token 還只是 untracked（本案例） | 🟡 可控 | 加 `.gitignore` → 指定路徑 add → 驗證 staging → 正常 push |
+| token 已 staged 但還沒 commit | 🟡 可控 | `git restore --staged token/` 取消 staging，再照上面做 |
+| token 已 commit 但**還沒 push** | 🟠 要處理 | `git reset --soft HEAD~1` 退回，加 `.gitignore` 後重新 commit |
+| token 已 push 到 GitHub | 🔴 嚴重 | **先去 Hugging Face / GitHub 後台把該 token 撤銷重發**，改歷史（`git filter-repo`）只是善後，token 已經外流了 |
+
+**重點**：
+- `git add .` 是最常見的外洩途徑。**push 前一定先看 `git status` 的 untracked 清單**，確認沒有金鑰、`.env`、私人資料。
+- 判斷嚴重度的關鍵是「**有沒有 push 出去**」。沒 push 之前都只是本機問題，改掉就好；push 出去就只能撤銷 token 重發，改歷史救不回來。
+- `.gitignore` 只對**還沒被追蹤**的檔案有效。已經 commit 過的檔案要先 `git rm --cached <file>` 才會真正被忽略。
+- 金鑰正確的存放位置是**專案外**（`~/.cache/huggingface/token`）或環境變數（`export HF_TOKEN=...` 寫在 `~/.bashrc`），不要放在 repo 裡面靠 `.gitignore` 保護。
+- → 相關：[案例 2](#案例-2把-git-remote-從舊-repo-換到新-repo) 換 remote 後第一次 push，是最容易一口氣 `git add .` 把不該進版控的東西推上去的時機。
+
+---
+
+*最後更新：2026-09-21*
